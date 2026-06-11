@@ -94,3 +94,55 @@ def test_fetch_logs_excludes_cache_read(tmp_path):
     snap = fetch_logs(Budget(five_hour_tokens=600, weekly_tokens=6000), claude_root=tmp_path)
     assert round(snap.five_hour_pct, 1) == 50.0
     assert round(snap.weekly_pct, 1) == 5.0
+
+
+def test_fetch_logs_dedupes_by_message_id(tmp_path):
+    now = datetime.now(timezone.utc)
+    proj = tmp_path / "projects" / "demo"
+    proj.mkdir(parents=True)
+    # Same message.id logged twice (resume); its 1800 tokens must count once.
+    rec = (
+        '{"type":"assistant","timestamp":"' + now.isoformat() + '",'
+        '"message":{"id":"msg_abc","usage":{"input_tokens":600,"output_tokens":600,'
+        '"cache_creation_input_tokens":600,"cache_read_input_tokens":0}}}'
+    )
+    (proj / "s.jsonl").write_text(rec + "\n" + rec + "\n")
+    snap = fetch_logs(Budget(five_hour_tokens=3600, weekly_tokens=18000), claude_root=tmp_path)
+    assert round(snap.five_hour_pct, 1) == 50.0   # 1800/3600, not 3600/3600
+    assert round(snap.weekly_pct, 1) == 10.0
+
+
+def test_fetch_logs_ignores_future_timestamps(tmp_path):
+    now = datetime.now(timezone.utc)
+    proj = tmp_path / "projects" / "demo"
+    proj.mkdir(parents=True)
+    future = (
+        '{"type":"assistant","timestamp":"' + (now + timedelta(hours=3)).isoformat() + '",'
+        '"message":{"usage":{"input_tokens":1000000,"output_tokens":0,'
+        '"cache_creation_input_tokens":0,"cache_read_input_tokens":0}}}'
+    )
+    (proj / "s.jsonl").write_text(future)
+    snap = fetch_logs(Budget(five_hour_tokens=10, weekly_tokens=10), claude_root=tmp_path)
+    assert snap.five_hour_pct == 0.0
+    assert snap.weekly_pct == 0.0
+
+
+def test_fetch_logs_skips_files_older_than_week(tmp_path):
+    import os
+    now = datetime.now(timezone.utc)
+    proj = tmp_path / "projects" / "demo"
+    proj.mkdir(parents=True)
+    # In-window timestamp inside the line, but the FILE's mtime is 10 days old.
+    rec = (
+        '{"type":"assistant","timestamp":"' + now.isoformat() + '",'
+        '"message":{"usage":{"input_tokens":600,"output_tokens":600,'
+        '"cache_creation_input_tokens":600,"cache_read_input_tokens":0}}}'
+    )
+    f = proj / "old.jsonl"
+    f.write_text(rec)
+    old = (now - timedelta(days=10)).timestamp()
+    os.utime(f, (old, old))
+    snap = fetch_logs(Budget(five_hour_tokens=3600, weekly_tokens=18000), claude_root=tmp_path)
+    # File skipped by mtime, so nothing counted.
+    assert snap.five_hour_pct == 0.0
+    assert snap.weekly_pct == 0.0

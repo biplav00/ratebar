@@ -10,19 +10,23 @@ ratebar builds itself on GitHub Actions: [`.github/workflows/build.yml`](../.git
 | Pull request → `main` | Same test + build (verifies the PR builds) — no release |
 | Push a tag `v*` (e.g. `v0.3.0`) | Same, **plus** attach the `.dmg` to the GitHub **Release** for that tag |
 
-The job runs on a **`macos-14`** (Apple Silicon) runner, so the produced bundle
-is arm64 — matching local `packaging/build_dmg.sh` output.
+## Jobs
 
-## Steps
+- **`build`** (runs on every trigger, `macos-14` Apple-Silicon runner, so the
+  bundle is arm64): checkout → install uv → `uv sync --frozen` →
+  `uv run pytest -q` → `bash packaging/build_dmg.sh` (PyInstaller → `.app`,
+  `hdiutil` → `.dmg`) → upload the `.dmg` artifact.
+- **`release`** (tags `v*` only): downloads the artifact and attaches the `.dmg`
+  to the GitHub Release.
 
-1. `actions/checkout`
-2. Install [uv](https://docs.astral.sh/uv/) (`astral-sh/setup-uv`, cache enabled)
-3. `uv sync --frozen` — installs from `uv.lock`, including the dev group
-   (`pytest`, `pyinstaller`)
-4. `uv run pytest -q`
-5. `bash packaging/build_dmg.sh` — PyInstaller → `.app`, then `hdiutil` → `.dmg`
-6. `actions/upload-artifact` — the `.dmg`
-7. On tags only: `softprops/action-gh-release` attaches the `.dmg`
+## Security posture
+
+- Default `permissions: contents: read`. Only the tag-gated `release` job is
+  granted `contents: write` — PR/branch builds never hold write.
+- All third-party actions are pinned to **commit SHAs** (with a `# vX.Y.Z`
+  comment), not mutable tags, to resist supply-chain tag-moving.
+- `run:` steps use no untrusted `github.event.*` input, so there's no script
+  injection surface.
 
 ## Getting the build
 

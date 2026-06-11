@@ -3,22 +3,10 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Optional
 
-from .types import UsageSnapshot
-
-_GREEN, _AMBER, _RED = "🟢", "🟡", "🔴"
-
-# RGB triples (0..1) matching the glyph thresholds, for AppKit drawing.
+# RGB triples (0..1) for the severity thresholds, for AppKit drawing.
 _GREEN_RGB = (0.20, 0.78, 0.35)
 _AMBER_RGB = (1.0, 0.62, 0.04)
 _RED_RGB = (1.0, 0.23, 0.19)
-
-
-def glyph(pct: float) -> str:
-    if pct < 50:
-        return _GREEN
-    if pct < 85:
-        return _AMBER
-    return _RED
 
 
 def severity_color(pct: float) -> tuple[float, float, float]:
@@ -27,22 +15,6 @@ def severity_color(pct: float) -> tuple[float, float, float]:
     if pct < 85:
         return _AMBER_RGB
     return _RED_RGB
-
-
-def bar(pct: float, width: int = 8) -> str:
-    pct = max(0.0, min(100.0, pct))
-    filled = round(pct / 100 * width)
-    return "█" * filled + "░" * (width - filled)
-
-
-def title(snap: UsageSnapshot) -> str:
-    # Worst (highest) of the two windows drives the title color.
-    worst = max(snap.five_hour_pct, snap.weekly_pct)
-    marker = "" if snap.source == "live" else "~"
-    return (
-        f"{glyph(worst)} {marker}5h {snap.five_hour_pct:.0f}% "
-        f"· wk {snap.weekly_pct:.0f}%"
-    )
 
 
 def countdown(reset: Optional[datetime], now: Optional[datetime] = None) -> str:

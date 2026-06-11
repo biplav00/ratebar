@@ -7,9 +7,9 @@ on:
   pull_request:
     branches: [main]
 
-# Allow the tag job to publish release assets.
+# Least privilege by default; only the release job opts into write.
 permissions:
-  contents: write
+  contents: read
 
 # One run per ref; newer pushes cancel in-flight builds.
 concurrency:
@@ -22,10 +22,10 @@ jobs:
     runs-on: macos-14
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86  # v5.4.2
         with:
           enable-cache: true
 
@@ -39,15 +39,27 @@ jobs:
         run: bash packaging/build_dmg.sh
 
       - name: Upload .dmg as build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
         with:
           name: Ratebar-dmg
           path: packaging/dist/Ratebar.dmg
           if-no-files-found: error
 
-      # On a version tag (v*), also attach the .dmg to the GitHub Release.
-      - name: Attach .dmg to release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+  # On a version tag (v*) only: attach the built .dmg to the GitHub Release.
+  # This is the sole job granted contents:write.
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download built .dmg
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4.3.0
         with:
-          files: packaging/dist/Ratebar.dmg
+          name: Ratebar-dmg
+
+      - name: Attach .dmg to release
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda  # v2.2.1
+        with:
+          files: Ratebar.dmg

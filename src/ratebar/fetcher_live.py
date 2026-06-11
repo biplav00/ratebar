@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import json
 import subprocess
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
 import requests
 
 from .types import UsageSnapshot
+from .timeutil import parse_ts
 
 # Verified 2026-06-11 against Claude Code 2.1.173: the binary fetches
 # /api/oauth/usage and the payload uses five_hour/seven_day with utilization +
@@ -50,16 +50,6 @@ def _http_get(url: str, headers: dict):
     return requests.get(url, headers=headers, timeout=10)
 
 
-def _parse_ts(raw: Optional[str]) -> Optional[datetime]:
-    if not raw:
-        return None
-    try:
-        dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
-
-
 def _parse_payload(payload: dict) -> UsageSnapshot:
     # `or {}` guards against the keys being present but explicitly null.
     fh = payload.get("five_hour") or {}
@@ -67,8 +57,8 @@ def _parse_payload(payload: dict) -> UsageSnapshot:
     return UsageSnapshot(
         five_hour_pct=float(fh.get("utilization", 0)),
         weekly_pct=float(wk.get("utilization", 0)),
-        five_hour_resets_at=_parse_ts(fh.get("resets_at")),
-        weekly_resets_at=_parse_ts(wk.get("resets_at")),
+        five_hour_resets_at=parse_ts(fh.get("resets_at")),
+        weekly_resets_at=parse_ts(wk.get("resets_at")),
         source="live",
     )
 
