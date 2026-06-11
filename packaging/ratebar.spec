@@ -39,7 +39,7 @@ coll = COLLECT(exe, a.binaries, a.datas, name="ratebar")
 app = BUNDLE(
     coll,
     name="ratebar.app",
-    icon=None,
+    icon="ratebar.icns",
     bundle_identifier="com.biplav00.ratebar",
     info_plist={
         "LSUIElement": True,    # menu-bar only: no Dock icon, no window
