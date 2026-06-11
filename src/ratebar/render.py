@@ -53,8 +53,11 @@ def countdown(reset: Optional[datetime], now: Optional[datetime] = None) -> str:
     secs = int(delta.total_seconds())
     if secs <= 0:
         return "now"
-    h, rem = divmod(secs, 3600)
+    d, rem = divmod(secs, 86400)
+    h, rem = divmod(rem, 3600)
     m = rem // 60
+    if d:
+        return f"in {d}d {h}h"
     return f"in {h}h {m}m" if h else f"in {m}m"
 
 

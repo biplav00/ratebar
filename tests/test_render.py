@@ -59,3 +59,9 @@ def test_reset_label_none_and_past():
     assert render.reset_label(None, now) == "—"
     past = datetime(2026, 6, 11, 16, 0, tzinfo=timezone.utc)
     assert render.reset_label(past, now) == "now"
+
+
+def test_countdown_days():
+    now = datetime(2026, 6, 11, 16, 0, tzinfo=timezone.utc)
+    assert render.countdown(now + timedelta(days=6, hours=2, minutes=30), now) == "in 6d 2h"
+    assert render.countdown(now + timedelta(hours=23, minutes=59), now) == "in 23h 59m"
