@@ -37,3 +37,43 @@ def test_fetch_logs_empty_returns_zero(tmp_path):
     snap = fetch_logs(Budget(), claude_root=tmp_path)
     assert snap.five_hour_pct == 0.0
     assert snap.weekly_pct == 0.0
+
+
+def test_fetch_logs_skips_malformed_lines(tmp_path):
+    now = datetime.now(timezone.utc)
+    proj = tmp_path / "projects" / "demo"
+    proj.mkdir(parents=True)
+    good = (
+        '{"type":"assistant","timestamp":"' + now.isoformat() + '",'
+        '"message":{"usage":{"input_tokens":600,"output_tokens":600,'
+        '"cache_creation_input_tokens":600,"cache_read_input_tokens":0}}}'
+    )
+    lines = [
+        "",                              # blank
+        "not json at all",               # bad JSON
+        '{"timestamp":"' + now.isoformat() + '","message":{}}',   # no usage
+        '{"message":{"usage":{"input_tokens":5}}}',               # no timestamp
+        good,                            # the only valid line: 1800 tokens
+    ]
+    (proj / "session.jsonl").write_text("\n".join(lines))
+    # budget 3600 -> 1800/3600 = 50%; only the good line counts.
+    snap = fetch_logs(Budget(five_hour_tokens=3600, weekly_tokens=18000), claude_root=tmp_path)
+    assert round(snap.five_hour_pct, 1) == 50.0
+    assert round(snap.weekly_pct, 1) == 10.0
+    assert snap.five_hour_resets_at is None
+    assert snap.weekly_resets_at is None
+
+
+def test_fetch_logs_caps_at_100_percent(tmp_path):
+    now = datetime.now(timezone.utc)
+    proj = tmp_path / "projects" / "demo"
+    proj.mkdir(parents=True)
+    big = (
+        '{"type":"assistant","timestamp":"' + now.isoformat() + '",'
+        '"message":{"usage":{"input_tokens":1000000,"output_tokens":0,'
+        '"cache_creation_input_tokens":0,"cache_read_input_tokens":0}}}'
+    )
+    (proj / "s.jsonl").write_text(big)
+    snap = fetch_logs(Budget(five_hour_tokens=10, weekly_tokens=10), claude_root=tmp_path)
+    assert snap.five_hour_pct == 100.0
+    assert snap.weekly_pct == 100.0

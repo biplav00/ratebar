@@ -73,7 +73,7 @@ def fetch_logs(budget: Budget, claude_root: Optional[Path] = None) -> UsageSnaps
     return UsageSnapshot(
         five_hour_pct=pct(five_h_tokens, budget.five_hour_tokens),
         weekly_pct=pct(week_tokens, budget.weekly_tokens),
-        five_hour_resets_at=five_h_cutoff + timedelta(hours=5),
-        weekly_resets_at=week_cutoff + timedelta(days=7),
+        five_hour_resets_at=None,
+        weekly_resets_at=None,
         source="estimate",
     )
