@@ -1,5 +1,7 @@
 # ratebar
 
+[![build](https://github.com/biplav00/ratebar/actions/workflows/build.yml/badge.svg)](https://github.com/biplav00/ratebar/actions/workflows/build.yml)
+
 macOS menu bar readout of Claude Code subscription usage. A small ring gauge in
 the menu bar shows the worst of your two windows; click it for a native popover
 with colored progress bars and reset times.
@@ -32,6 +34,9 @@ The build is **unsigned / not notarized**, so Gatekeeper will block it on first
 launch. To open it: right-click `ratebar.app` → **Open** → **Open**, once. After
 that it launches normally. To start it at login: System Settings → General →
 Login Items → add ratebar.
+
+Prefer not to build locally? Every push to `main` produces a `.dmg` on CI, and
+tagged releases attach one. See [docs/ci.md](docs/ci.md).
 
 ## Tune the estimate
 
