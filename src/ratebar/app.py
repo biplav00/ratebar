@@ -12,11 +12,12 @@ from AppKit import (
     NSViewController, NSImageLeft, NSMinYEdge, NSObject, NSTimer, NSMakeRect,
 )
 
-from .types import Budget
 from . import usage, render, gauge
 from .ui.popover import PopoverView
 
 _POLL = 60.0
+_GREEN = (0.20, 0.78, 0.35)
+_GRAY = (0.6, 0.6, 0.6)
 
 
 class _Controller(NSObject):
@@ -24,7 +25,8 @@ class _Controller(NSObject):
         self = objc.super(_Controller, self).init()
         if self is None:
             return None
-        self.budget = Budget()
+        self._last = None        # last successful snapshot
+        self._last_time = None   # when it was fetched (local datetime)
 
         bar = NSStatusBar.systemStatusBar()
         self.item = bar.statusItemWithLength_(NSVariableStatusItemLength)
@@ -51,23 +53,56 @@ class _Controller(NSObject):
         )
         return self
 
+    @objc.python_method
     def _refresh(self):
         try:
-            snap = usage.get(self.budget)
-            # Menu bar tracks the 5-hour window (the one that bites during a session).
-            fh = snap.five_hour_pct
-            rgb = render.severity_color(fh)
-            btn = self.item.button()
-            btn.setImage_(gauge.ring_image(fh, rgb))
-            marker = "" if snap.source == "live" else "~"
-            btn.setTitle_(f" {marker}{fh:.0f}%")
-            self.view.update_(snap)
-            self.view.updated.setStringValue_(
-                "Updated " + _dt.datetime.now().strftime("%-I:%M %p")
-            )
+            snap = usage.get()
+            if snap is not None:
+                self._last = snap
+                self._last_time = _dt.datetime.now()
+                self._render_live(snap)
+            elif self._last is not None:
+                self._render_stale(self._last, self._last_time)
+            else:
+                self._render_unavailable()
         except Exception:
             # Never let a render error kill the timer loop; keep prior state.
             pass
+
+    @objc.python_method
+    def _render_live(self, snap):
+        # Menu bar tracks the 5-hour window (the one that bites during a session).
+        fh = snap.five_hour_pct
+        btn = self.item.button()
+        btn.setAppearsDisabled_(False)
+        btn.setImage_(gauge.ring_image(fh, render.severity_color(fh)))
+        btn.setTitle_(f" {fh:.0f}%")
+        self.view.update_(snap)
+        self.view.set_status_("● live", _GREEN)
+        self.view.set_updated_("Updated " + self._last_time.strftime("%-I:%M %p"))
+
+    @objc.python_method
+    def _render_stale(self, snap, when):
+        # Keep the last numbers but dim everything to signal they're stale.
+        fh = snap.five_hour_pct
+        btn = self.item.button()
+        btn.setAppearsDisabled_(True)   # greys the whole status item
+        btn.setImage_(gauge.ring_image(fh, _GRAY))
+        btn.setTitle_(f" {fh:.0f}%")
+        self.view.update_(snap)
+        stamp = when.strftime("%-I:%M %p") if when else "?"
+        self.view.set_status_("● stale", _GRAY)
+        self.view.set_updated_("Last updated " + stamp)
+
+    @objc.python_method
+    def _render_unavailable(self):
+        btn = self.item.button()
+        btn.setAppearsDisabled_(True)
+        btn.setImage_(gauge.ring_image(0, _GRAY))
+        btn.setTitle_(" —")
+        self.view.show_unavailable_()
+        self.view.set_status_("● no data", _GRAY)
+        self.view.set_updated_("—")
 
     def tick_(self, _timer):
         self._refresh()

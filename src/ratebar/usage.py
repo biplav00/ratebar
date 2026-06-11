@@ -1,20 +1,15 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from .fetcher_live import fetch_live
-from .fetcher_logs import fetch_logs
-from .types import Budget, UsageSnapshot
+from .types import UsageSnapshot
 
 
-def _neutral() -> UsageSnapshot:
-    return UsageSnapshot(0.0, 0.0, None, None, "estimate")
-
-
-def get(budget: Budget) -> UsageSnapshot:
+def get() -> Optional[UsageSnapshot]:
+    """Fetch the official usage snapshot, or None if it can't be retrieved
+    (no token, offline, endpoint changed). Never raises."""
     try:
         return fetch_live()
     except Exception:
-        pass
-    try:
-        return fetch_logs(budget)
-    except Exception:
-        return _neutral()
+        return None
