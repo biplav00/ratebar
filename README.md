@@ -8,9 +8,24 @@ menu bar item for per-window block bars, reset countdowns, and the data source.
 - **Live** official percentages via the Claude Code OAuth token when reachable.
 - **Estimate** (`~` prefix) from local `~/.claude` token logs as fallback.
 
-## Run
+## Run (from source)
 
     uv run python -m ratebar
+
+## Install (.app / .dmg)
+
+Build a standalone menu-bar app — no Python needed to run it:
+
+    packaging/build_dmg.sh
+
+This produces `packaging/dist/ratebar.app` and `packaging/dist/ratebar.dmg`
+(arm64, menu-bar-only via `LSUIElement`). Open the `.dmg` and drag **ratebar**
+to Applications.
+
+The build is **unsigned / not notarized**, so Gatekeeper will block it on first
+launch. To open it: right-click `ratebar.app` → **Open** → **Open**, once. After
+that it launches normally. To start it at login: System Settings → General →
+Login Items → add ratebar.
 
 ## Tune the estimate
 
@@ -27,6 +42,6 @@ Four small modules:
 
 ## Note
 
-The live `/usage` endpoint is undocumented; if it breaks, ratebar silently
-falls back to the estimate (shown with a `~` prefix). See
-`src/ratebar/fetcher_live.py`.
+The live `/usage` endpoint (`/api/oauth/usage`) is undocumented but verified
+against Claude Code 2.1.173. If Anthropic changes it, ratebar silently falls
+back to the estimate (shown with a `~` prefix). See `src/ratebar/fetcher_live.py`.
