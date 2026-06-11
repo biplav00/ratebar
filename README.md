@@ -1,12 +1,18 @@
 # ratebar
 
-macOS menu bar readout of Claude Code subscription usage: `5h 47% · wk 12%`.
+macOS menu bar readout of Claude Code subscription usage. A small ring gauge in
+the menu bar shows the worst of your two windows; click it for a native popover
+with colored progress bars and reset times.
 
-A traffic-light glyph (🟢 🟡 🔴) reflects the worst of the two windows; click the
-menu bar item for per-window block bars, reset countdowns, and the data source.
+![ratebar popover](docs/popover.png)
 
+- Menu bar: a severity-colored **ring gauge** + the worst-window percentage
+  (`~` prefix when on the estimate fallback).
+- Popover: **5-hour** and **weekly** windows, each a colored progress bar, a
+  percentage, and the reset **date + time + countdown**. Auto-adapts to
+  light/dark mode.
 - **Live** official percentages via the Claude Code OAuth token when reachable.
-- **Estimate** (`~` prefix) from local `~/.claude` token logs as fallback.
+- **Estimate** from local `~/.claude` token logs as fallback.
 
 ## Run (from source)
 
@@ -38,7 +44,8 @@ Four small modules:
 - `fetcher_live.py` — calls the official `/usage` endpoint with your OAuth token.
 - `fetcher_logs.py` — estimates usage by summing tokens from local JSONL logs.
 - `usage.py` — tries live first, falls back to the estimate, never crashes.
-- `app.py` — the rumps menu bar UI (`render.py` formats the text).
+- `app.py` — native pyobjc menu bar: `NSStatusItem` ring (`gauge.py`) + an
+  `NSPopover` (`ui/popover.py`, `ui/bar_view.py`); `render.py` does the math.
 
 ## Note
 
