@@ -3,15 +3,22 @@
 # (or use packaging/build_dmg.sh). Paths below are relative to this dir.
 from PyInstaller.utils.hooks import collect_all
 
-# rumps sits on pyobjc; pull everything it needs so the bundle is self-contained.
-rumps_datas, rumps_binaries, rumps_hidden = collect_all("rumps")
+# Pull the pyobjc AppKit/objc bits so the bundle is self-contained.
+ak_d, ak_b, ak_h = collect_all("AppKit")
+oc_d, oc_b, oc_h = collect_all("objc")
+pkg_datas = ak_d + oc_d
+pkg_binaries = ak_b + oc_b
+pkg_hidden = ak_h + oc_h + [
+    "ratebar", "ratebar.ui.popover", "ratebar.ui.bar_view",
+    "ratebar.gauge", "requests",
+]
 
 a = Analysis(
     ["launcher.py"],
     pathex=["../src"],          # so `import ratebar` resolves from source
-    binaries=rumps_binaries,
-    datas=rumps_datas,
-    hiddenimports=rumps_hidden + ["ratebar", "requests"],
+    binaries=pkg_binaries,
+    datas=pkg_datas,
+    hiddenimports=pkg_hidden,
     hookspath=[],
     runtime_hooks=[],
     excludes=[],

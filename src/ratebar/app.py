@@ -1,42 +1,97 @@
+"""Native menu-bar app: an NSStatusItem ring gauge that toggles an NSPopover
+showing per-window colored bars. Replaces the old rumps UI; the data backend
+(usage/fetchers) is unchanged."""
 from __future__ import annotations
 
-import rumps
+import datetime as _dt
+
+import objc
+from AppKit import (
+    NSApplication, NSApplicationActivationPolicyAccessory, NSStatusBar,
+    NSVariableStatusItemLength, NSPopover, NSPopoverBehaviorTransient,
+    NSViewController, NSImageLeft, NSMinYEdge, NSObject, NSTimer, NSMakeRect,
+)
 
 from .types import Budget
-from . import usage, render
+from . import usage, render, gauge
+from .ui.popover import PopoverView
 
-_POLL_SECONDS = 60
+_POLL = 60.0
 
 
-class RatebarApp(rumps.App):
-    def __init__(self):
-        super().__init__("ratebar", title="…")
+class _Controller(NSObject):
+    def init(self):
+        self = objc.super(_Controller, self).init()
+        if self is None:
+            return None
         self.budget = Budget()
-        self.item_5h = rumps.MenuItem("5h: —")
-        self.item_wk = rumps.MenuItem("weekly: —")
-        self.item_src = rumps.MenuItem("source: —")
-        self.menu = [self.item_5h, self.item_wk, self.item_src, None,
-                     rumps.MenuItem("Refresh", callback=self._refresh)]
-        self._refresh(None)
 
-    @rumps.timer(_POLL_SECONDS)
-    def _tick(self, _):
-        self._refresh(None)
+        bar = NSStatusBar.systemStatusBar()
+        self.item = bar.statusItemWithLength_(NSVariableStatusItemLength)
+        btn = self.item.button()
+        btn.setImagePosition_(NSImageLeft)
+        btn.setTarget_(self)
+        btn.setAction_("toggle:")
 
-    def _refresh(self, _):
-        snap = usage.get(self.budget)
-        self.title = render.title(snap)
-        self.item_5h.title = (
-            f"5h    {render.bar(snap.five_hour_pct)}  {snap.five_hour_pct:.0f}%  "
-            f"({render.countdown(snap.five_hour_resets_at)})"
+        self.view = PopoverView.alloc().initWithFrame_(NSMakeRect(0, 0, 280, 196)).build()
+        vc = NSViewController.alloc().init()
+        vc.setView_(self.view)
+        self.popover = NSPopover.alloc().init()
+        self.popover.setContentViewController_(vc)
+        self.popover.setBehavior_(NSPopoverBehaviorTransient)
+
+        self.view.refresh.setTarget_(self)
+        self.view.refresh.setAction_("refresh:")
+        self.view.quit.setTarget_(self)
+        self.view.quit.setAction_("quitApp:")
+
+        self._refresh()
+        NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
+            _POLL, self, "tick:", None, True
         )
-        self.item_wk.title = (
-            f"week  {render.bar(snap.weekly_pct)}  {snap.weekly_pct:.0f}%  "
-            f"({render.countdown(snap.weekly_resets_at)})"
-        )
-        badge = "live ✓" if snap.source == "live" else "estimate ⚠ (local logs)"
-        self.item_src.title = f"source: {badge}"
+        return self
+
+    def _refresh(self):
+        try:
+            snap = usage.get(self.budget)
+            worst = max(snap.five_hour_pct, snap.weekly_pct)
+            rgb = render.severity_color(worst)
+            btn = self.item.button()
+            btn.setImage_(gauge.ring_image(worst, rgb))
+            marker = "" if snap.source == "live" else "~"
+            btn.setTitle_(f" {marker}{worst:.0f}%")
+            self.view.update_(snap)
+            self.view.updated.setStringValue_(
+                "Updated " + _dt.datetime.now().strftime("%-I:%M %p")
+            )
+        except Exception:
+            # Never let a render error kill the timer loop; keep prior state.
+            pass
+
+    def tick_(self, _timer):
+        self._refresh()
+
+    def refresh_(self, _sender):
+        self._refresh()
+
+    def toggle_(self, sender):
+        if self.popover.isShown():
+            self.popover.performClose_(sender)
+        else:
+            self.popover.showRelativeToRect_ofView_preferredEdge_(
+                sender.bounds(), sender, NSMinYEdge
+            )
+
+    def quitApp_(self, _sender):
+        NSApplication.sharedApplication().terminate_(None)
+
+
+_RETAIN = []  # keep the controller (and its status item) alive for the process
 
 
 def run():
-    RatebarApp().run()
+    app = NSApplication.sharedApplication()
+    app.setActivationPolicy_(NSApplicationActivationPolicyAccessory)
+    controller = _Controller.alloc().init()
+    _RETAIN.append(controller)
+    app.run()
