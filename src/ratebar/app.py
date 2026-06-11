@@ -54,12 +54,13 @@ class _Controller(NSObject):
     def _refresh(self):
         try:
             snap = usage.get(self.budget)
-            worst = max(snap.five_hour_pct, snap.weekly_pct)
-            rgb = render.severity_color(worst)
+            # Menu bar tracks the 5-hour window (the one that bites during a session).
+            fh = snap.five_hour_pct
+            rgb = render.severity_color(fh)
             btn = self.item.button()
-            btn.setImage_(gauge.ring_image(worst, rgb))
+            btn.setImage_(gauge.ring_image(fh, rgb))
             marker = "" if snap.source == "live" else "~"
-            btn.setTitle_(f" {marker}{worst:.0f}%")
+            btn.setTitle_(f" {marker}{fh:.0f}%")
             self.view.update_(snap)
             self.view.updated.setStringValue_(
                 "Updated " + _dt.datetime.now().strftime("%-I:%M %p")
