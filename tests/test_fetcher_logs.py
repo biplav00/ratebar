@@ -77,3 +77,20 @@ def test_fetch_logs_caps_at_100_percent(tmp_path):
     snap = fetch_logs(Budget(five_hour_tokens=10, weekly_tokens=10), claude_root=tmp_path)
     assert snap.five_hour_pct == 100.0
     assert snap.weekly_pct == 100.0
+
+
+def test_fetch_logs_excludes_cache_read(tmp_path):
+    now = datetime.now(timezone.utc)
+    proj = tmp_path / "projects" / "demo"
+    proj.mkdir(parents=True)
+    # cache_read is huge but must NOT count; only 100+200+0 = 300 should.
+    line = (
+        '{"type":"assistant","timestamp":"' + now.isoformat() + '",'
+        '"message":{"usage":{"input_tokens":100,"output_tokens":200,'
+        '"cache_creation_input_tokens":0,"cache_read_input_tokens":9000000}}}'
+    )
+    (proj / "s.jsonl").write_text(line)
+    # budget 600 -> 300/600 = 50%. If cache_read leaked in, this would be 100%.
+    snap = fetch_logs(Budget(five_hour_tokens=600, weekly_tokens=6000), claude_root=tmp_path)
+    assert round(snap.five_hour_pct, 1) == 50.0
+    assert round(snap.weekly_pct, 1) == 5.0

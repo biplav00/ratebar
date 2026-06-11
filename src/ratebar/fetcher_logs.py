@@ -7,11 +7,13 @@ from typing import Optional
 
 from .types import Budget, UsageSnapshot
 
+# Cache-read tokens are excluded: they are heavily discounted and dominate the
+# logs (often >90% of all tokens), which would peg any estimate at 100%. We
+# approximate "real" usage as input + output + cache-creation tokens.
 _TOKEN_FIELDS = (
     "input_tokens",
     "output_tokens",
     "cache_creation_input_tokens",
-    "cache_read_input_tokens",
 )
 
 

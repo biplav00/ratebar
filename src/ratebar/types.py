@@ -17,7 +17,9 @@ class UsageSnapshot:
 
 @dataclass(frozen=True)
 class Budget:
-    # Token budgets used to turn raw token counts into a percentage for the
-    # estimate fallback. Defaults are rough and meant to be tuned by the user.
-    five_hour_tokens: int = 20_000_000
-    weekly_tokens: int = 300_000_000
+    # Token budgets (input + output + cache-creation; see fetcher_logs) used to
+    # turn raw token counts into a rough percentage for the estimate fallback.
+    # These are approximate and meant to be tuned: compare ratebar's estimate to
+    # the official numbers from Claude Code's `/usage` and scale to taste.
+    five_hour_tokens: int = 12_000_000
+    weekly_tokens: int = 200_000_000
