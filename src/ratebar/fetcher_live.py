@@ -59,7 +59,6 @@ def _parse_payload(payload: dict) -> UsageSnapshot:
         weekly_pct=float(wk.get("utilization", 0)),
         five_hour_resets_at=parse_ts(fh.get("resets_at")),
         weekly_resets_at=parse_ts(wk.get("resets_at")),
-        source="live",
     )
 
 

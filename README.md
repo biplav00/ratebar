@@ -13,10 +13,9 @@ colored progress bars and reset times.
 - Popover: **5-hour** and **weekly** windows, each a colored progress bar, a
   percentage, and the reset **date + time + countdown**. Auto-adapts to
   light/dark mode.
-- **Live** official percentages via the Claude Code OAuth token when reachable.
-- **Estimate** from local `~/.claude` token logs as fallback — sums input +
-  output + cache-creation tokens (cache-reads excluded), deduping repeated
-  records, over rolling 5h / 7d windows.
+- Official percentages straight from the Claude Code `/usage` endpoint via your
+  OAuth token. If a fetch fails (offline, no token), it keeps the last reading
+  **dimmed** and labels it `stale` until it recovers.
 
 ## Run (from source)
 
@@ -40,35 +39,30 @@ Login Items → add Ratebar.
 Prefer not to build locally? Every push to `main` produces a `.dmg` on CI, and
 tagged releases attach one. See [docs/ci.md](docs/ci.md).
 
-## Tune the estimate
-
-Edit `Budget` defaults in `src/ratebar/types.py` to match your plan's limits.
-
 ## How it works
 
-Four small modules:
-
 - `fetcher_live.py` — calls the official `/usage` endpoint with your OAuth token.
-- `fetcher_logs.py` — estimates usage by summing tokens from local JSONL logs.
-- `usage.py` — tries live first, falls back to the estimate, never crashes.
+- `usage.py` — returns the snapshot, or `None` if it can't be fetched (never raises).
 - `app.py` — native pyobjc menu bar: `NSStatusItem` ring (`gauge.py`) + an
   `NSPopover` (`ui/popover.py`, `ui/bar_view.py`); `render.py` does the math.
 
 ## Note
 
-The live `/usage` endpoint (`/api/oauth/usage`) is undocumented but verified
-against Claude Code 2.1.173. If Anthropic changes it, Ratebar silently falls
-back to the estimate (shown with a `~` prefix). See `src/ratebar/fetcher_live.py`.
+The `/usage` endpoint (`/api/oauth/usage`) is undocumented but verified against
+Claude Code 2.1.173. If Anthropic changes it, the fetch fails and Ratebar shows
+the last reading as `stale` (or `no data` if it never succeeded). See
+`src/ratebar/fetcher_live.py`.
 
 ## Changelog
 
 Full notes + `.dmg` downloads on the
 [releases page](https://github.com/biplav00/ratebar/releases).
 
-- **v0.3.3** — estimate dedupes repeated log records (fixes ~2× over-count);
-  faster log scan (skip old files, stream reads); ignore clock-skewed
-  timestamps; dead-code cleanup; hardened CI (least-privilege perms, SHA-pinned
-  actions).
+- **v0.4.0** — dropped the local-log estimate fallback entirely; live `/usage`
+  is the only source. On failure, keeps the last reading dimmed (`stale`), or
+  `no data` before the first success.
+- **v0.3.3** — (estimate era) dedupe repeated log records; faster log scan;
+  ignore clock-skewed timestamps; dead-code cleanup; hardened CI.
 - **v0.3.2** — renamed the app to **Ratebar**.
 - **v0.3.1** — custom ring-gauge app icon.
 - **v0.3.0** — automated CI builds; tagged releases attach a `.dmg`.

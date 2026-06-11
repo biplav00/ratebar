@@ -29,7 +29,6 @@ def test_fetch_live_parses_payload(monkeypatch):
 
     snap = fetcher_live.fetch_live()
     assert isinstance(snap, UsageSnapshot)
-    assert snap.source == "live"
     assert snap.five_hour_pct == 47
     assert snap.weekly_pct == 12
 
@@ -46,7 +45,6 @@ def test_parse_payload_tolerates_null_windows():
     assert snap.five_hour_pct == 0.0
     assert snap.weekly_pct == 0.0
     assert snap.five_hour_resets_at is None
-    assert snap.source == "live"
 
 
 def test_parse_payload_accepts_weekly_alias():

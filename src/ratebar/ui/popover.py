@@ -3,6 +3,7 @@ date/countdown), and a footer. `update_(snapshot)` rewrites everything. Refresh
 and Quit targets are wired by app.py after construction."""
 from __future__ import annotations
 
+import objc
 from AppKit import (
     NSView, NSTextField, NSColor, NSFont, NSButton,
     NSMakeRect, NSBezelStyleRounded, NSTextAlignmentRight,
@@ -34,6 +35,7 @@ def _color(rgb):
 
 
 class PopoverView(NSView):
+    @objc.python_method
     def build(self):
         self.setFrame_(NSMakeRect(0, 0, _W, _H))
         ix = _PAD
@@ -75,11 +77,18 @@ class PopoverView(NSView):
             self.addSubview_(v)
         return self
 
-    def update_(self, snap):
-        live = snap.source == "live"
-        self.badge.setStringValue_("● live" if live else "● estimate")
-        self.badge.setTextColor_(_color((0.20, 0.78, 0.35) if live else (1.0, 0.62, 0.04)))
+    @objc.python_method
+    def set_status_(self, text, rgb):
+        self.badge.setStringValue_(text)
+        self.badge.setTextColor_(_color(rgb))
 
+    @objc.python_method
+    def set_updated_(self, text):
+        self.updated.setStringValue_(text)
+
+    @objc.python_method
+    def update_(self, snap):
+        """Fill the two window rows from a usage snapshot (colored by severity)."""
         c5 = render.severity_color(snap.five_hour_pct)
         self.h5_pct.setStringValue_(f"{snap.five_hour_pct:.0f}%")
         self.h5_pct.setTextColor_(_color(c5))
@@ -93,3 +102,17 @@ class PopoverView(NSView):
         self.wk_bar.setColor_(cw)
         self.wk_bar.setFraction_(snap.weekly_pct / 100.0)
         self.wk_reset.setStringValue_(render.reset_label(snap.weekly_resets_at))
+
+    @objc.python_method
+    def show_unavailable_(self):
+        """No data ever fetched: blank the rows."""
+        gray = (0.6, 0.6, 0.6)
+        for pct, bar, reset in (
+            (self.h5_pct, self.h5_bar, self.h5_reset),
+            (self.wk_pct, self.wk_bar, self.wk_reset),
+        ):
+            pct.setStringValue_("—")
+            pct.setTextColor_(NSColor.tertiaryLabelColor())
+            bar.setFraction_(0.0)
+            bar.setColor_(gray)
+            reset.setStringValue_("—")
