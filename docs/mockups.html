@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ratebar — UI mockups</title>
+<style>
+  :root {
+    --bar-bg: rgba(245,245,247,0.72);
+    --menu-bg: rgba(246,246,248,0.86);
+    --menu-border: rgba(0,0,0,0.10);
+    --text: #1d1d1f;
+    --muted: #86868b;
+    --hover: #2563eb;
+    --green: #34c759;
+    --amber: #ff9f0a;
+    --red: #ff3b30;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 70% -10%, #5b8def 0%, transparent 60%),
+      linear-gradient(160deg, #1f2937 0%, #0f172a 100%);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 36px 28px 80px;
+  }
+  h1 { color: #fff; font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+  .sub { color: #cbd5e1; font-size: 13px; margin: 0 0 30px; }
+  h2 { color: #e2e8f0; font-size: 13px; font-weight: 600; letter-spacing: .04em;
+       text-transform: uppercase; margin: 38px 0 14px; }
+
+  /* ---- menu bar strip ---- */
+  .menubar {
+    background: var(--bar-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 10px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    padding: 0 12px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset, 0 6px 18px rgba(0,0,0,.25);
+    max-width: 720px;
+  }
+  .mb-item { font-size: 13px; color: #2c2c2e; display: flex; align-items: center; gap: 5px; }
+  .mb-item.dim { color: #6b6b70; }
+  .mb-glyph { font-size: 14px; opacity:.85; }
+  .pill {
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+  }
+  .est { color: var(--amber); font-weight: 600; }
+
+  /* ---- dropdown menus ---- */
+  .row { display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-start; }
+  .stack { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+  .tag { color:#94a3b8; font-size:12px; text-align:center; }
+
+  .menu {
+    width: 268px;
+    background: var(--menu-bg);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 0.5px solid var(--menu-border);
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.32), 0 0 0 .5px rgba(0,0,0,.06);
+    font-size: 13px;
+  }
+  .m-head {
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 7px 10px 9px;
+  }
+  .m-title { font-weight:600; font-size:13px; }
+  .src-badge {
+    font-size: 10px; font-weight:700; letter-spacing:.03em;
+    padding: 2px 7px; border-radius: 999px;
+  }
+  .src-live { background: rgba(52,199,89,.16); color:#1f9d4d; }
+  .src-est  { background: rgba(255,159,10,.18); color:#b06a00; }
+  .m-sep { height:.5px; background: rgba(0,0,0,.10); margin: 4px 6px; }
+
+  .metric { padding: 8px 10px 6px; }
+  .metric .lab { display:flex; justify-content:space-between; align-items:baseline; }
+  .metric .name { color:#3a3a3c; }
+  .metric .val { font-weight:600; font-variant-numeric: tabular-nums; }
+  .metric .reset { color: var(--muted); font-size: 11px; margin-top: 2px; }
+  .bar { height: 6px; border-radius: 999px; background: rgba(0,0,0,.08); margin-top:7px; overflow:hidden; }
+  .bar > span { display:block; height:100%; border-radius:999px; }
+  .b-green > span { background: var(--green); }
+  .b-amber > span { background: var(--amber); }
+  .b-red   > span { background: var(--red); }
+
+  .m-action {
+    padding: 7px 10px; border-radius: 6px; color:#1d1d1f; cursor: default;
+    display:flex; justify-content:space-between;
+  }
+  .m-action:hover { background: var(--hover); color:#fff; }
+  .m-action .key { color: var(--muted); }
+  .m-action:hover .key { color: rgba(255,255,255,.8); }
+</style>
+</head>
+<body>
+  <h1>ratebar</h1>
+  <p class="sub">macOS menu bar mockups · title format <code style="color:#fff">5h&nbsp;% · wk&nbsp;%</code></p>
+
+  <h2>Menu bar title — states</h2>
+  <div class="stack" style="max-width:720px; gap:14px;">
+    <div class="menubar">
+      <span class="mb-item dim">Wi-Fi</span>
+      <span class="mb-item dim">100%</span>
+      <span class="mb-item"><span class="mb-glyph">◔</span><span class="pill">5h 12% · wk 8%</span></span>
+      <span class="mb-item dim">Mon 11 Jun&nbsp; 4:21 PM</span>
+    </div>
+    <div class="tag" style="text-align:left; padding-left:2px;">live · low usage</div>
+
+    <div class="menubar">
+      <span class="mb-item dim">Wi-Fi</span>
+      <span class="mb-item dim">100%</span>
+      <span class="mb-item"><span class="mb-glyph">◑</span><span class="pill">5h 47% · wk 31%</span></span>
+      <span class="mb-item dim">Mon 11 Jun&nbsp; 4:21 PM</span>
+    </div>
+    <div class="tag" style="text-align:left; padding-left:2px;">live · mid usage</div>
+
+    <div class="menubar">
+      <span class="mb-item dim">Wi-Fi</span>
+      <span class="mb-item dim">100%</span>
+      <span class="mb-item"><span class="mb-glyph" style="color:var(--red)">●</span><span class="pill" style="color:var(--red)">5h 92% · wk 74%</span></span>
+      <span class="mb-item dim">Mon 11 Jun&nbsp; 4:21 PM</span>
+    </div>
+    <div class="tag" style="text-align:left; padding-left:2px;">live · near limit (turns red ≥85%)</div>
+
+    <div class="menubar">
+      <span class="mb-item dim">Wi-Fi</span>
+      <span class="mb-item dim">100%</span>
+      <span class="mb-item"><span class="mb-glyph est">~</span><span class="pill est">5h 40% · wk 22%</span></span>
+      <span class="mb-item dim">Mon 11 Jun&nbsp; 4:21 PM</span>
+    </div>
+    <div class="tag" style="text-align:left; padding-left:2px;">estimate fallback · amber <code style="color:#fbbf24">~</code> prefix = not official</div>
+  </div>
+
+  <h2>Dropdown — open states</h2>
+  <div class="row">
+
+    <!-- LIVE -->
+    <div class="stack">
+      <div class="menu">
+        <div class="m-head">
+          <span class="m-title">Claude Code usage</span>
+          <span class="src-badge src-live">LIVE</span>
+        </div>
+        <div class="m-sep"></div>
+        <div class="metric">
+          <div class="lab"><span class="name">5-hour window</span><span class="val">47%</span></div>
+          <div class="bar b-amber"><span style="width:47%"></span></div>
+          <div class="reset">resets 6:00 PM · in 1h 39m</div>
+        </div>
+        <div class="metric">
+          <div class="lab"><span class="name">Weekly</span><span class="val">31%</span></div>
+          <div class="bar b-green"><span style="width:31%"></span></div>
+          <div class="reset">resets Thu 18 Jun</div>
+        </div>
+        <div class="m-sep"></div>
+        <div class="m-action"><span>Refresh</span><span class="key">⌘R</span></div>
+        <div class="m-action"><span>Quit ratebar</span><span class="key">⌘Q</span></div>
+      </div>
+      <div class="tag">live · official numbers</div>
+    </div>
+
+    <!-- ESTIMATE -->
+    <div class="stack">
+      <div class="menu">
+        <div class="m-head">
+          <span class="m-title">Claude Code usage</span>
+          <span class="src-badge src-est">ESTIMATE</span>
+        </div>
+        <div class="m-sep"></div>
+        <div class="metric">
+          <div class="lab"><span class="name">5-hour window</span><span class="val">40%</span></div>
+          <div class="bar b-amber"><span style="width:40%"></span></div>
+          <div class="reset">resets ~6:00 PM</div>
+        </div>
+        <div class="metric">
+          <div class="lab"><span class="name">Weekly</span><span class="val">22%</span></div>
+          <div class="bar b-green"><span style="width:22%"></span></div>
+          <div class="reset">rolling 7-day</div>
+        </div>
+        <div class="m-sep"></div>
+        <div class="m-action" style="cursor:default;"><span style="color:#b06a00;font-size:12px;">⚠ from local logs — endpoint unreachable</span></div>
+        <div class="m-sep"></div>
+        <div class="m-action"><span>Refresh</span><span class="key">⌘R</span></div>
+        <div class="m-action"><span>Quit ratebar</span><span class="key">⌘Q</span></div>
+      </div>
+      <div class="tag">estimate fallback</div>
+    </div>
+
+    <!-- NEAR LIMIT -->
+    <div class="stack">
+      <div class="menu">
+        <div class="m-head">
+          <span class="m-title">Claude Code usage</span>
+          <span class="src-badge src-live">LIVE</span>
+        </div>
+        <div class="m-sep"></div>
+        <div class="metric">
+          <div class="lab"><span class="name">5-hour window</span><span class="val" style="color:var(--red)">92%</span></div>
+          <div class="bar b-red"><span style="width:92%"></span></div>
+          <div class="reset">resets 6:00 PM · in 1h 39m</div>
+        </div>
+        <div class="metric">
+          <div class="lab"><span class="name">Weekly</span><span class="val" style="color:var(--amber)">74%</span></div>
+          <div class="bar b-amber"><span style="width:74%"></span></div>
+          <div class="reset">resets Thu 18 Jun</div>
+        </div>
+        <div class="m-sep"></div>
+        <div class="m-action"><span>Refresh</span><span class="key">⌘R</span></div>
+        <div class="m-action"><span>Quit ratebar</span><span class="key">⌘Q</span></div>
+      </div>
+      <div class="tag">live · near limit</div>
+    </div>
+
+  </div>
+</body>
+</html>
