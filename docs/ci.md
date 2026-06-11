@@ -27,7 +27,7 @@ is arm64 — matching local `packaging/build_dmg.sh` output.
 ## Getting the build
 
 - **From a push to main:** open the run under the repo's **Actions** tab →
-  the **`ratebar-dmg`** artifact (a zip containing `ratebar.dmg`).
+  the **`Ratebar-dmg`** artifact (a zip containing `Ratebar.dmg`).
 - **From a release:** the `.dmg` is attached directly to the release.
 
 ## Cutting a release

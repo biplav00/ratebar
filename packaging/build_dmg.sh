@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Build ratebar.app with PyInstaller, then package it into a drag-to-install .dmg.
-# Output: packaging/dist/ratebar.app and packaging/dist/ratebar.dmg
+# Build Ratebar.app with PyInstaller, then package it into a drag-to-install .dmg.
+# Output: packaging/dist/Ratebar.app and packaging/dist/Ratebar.dmg
 # Usage: packaging/build_dmg.sh
 set -euo pipefail
 
@@ -12,8 +12,8 @@ rm -rf build dist
 echo "==> Building .app with PyInstaller"
 uv run pyinstaller --noconfirm ratebar.spec
 
-APP="dist/ratebar.app"
-DMG="dist/ratebar.dmg"
+APP="dist/Ratebar.app"
+DMG="dist/Ratebar.dmg"
 [ -d "$APP" ] || { echo "ERROR: $APP not produced"; exit 1; }
 
 echo "==> Staging .dmg contents"
@@ -23,7 +23,7 @@ ln -s /Applications "$STAGE/Applications"   # drag-to-install target
 
 echo "==> Creating $DMG"
 rm -f "$DMG"
-hdiutil create -volname "ratebar" -srcfolder "$STAGE" -ov -format UDZO "$DMG" >/dev/null
+hdiutil create -volname "Ratebar" -srcfolder "$STAGE" -ov -format UDZO "$DMG" >/dev/null
 rm -rf "$STAGE"
 
 echo "==> Done"

@@ -38,13 +38,13 @@ coll = COLLECT(exe, a.binaries, a.datas, name="ratebar")
 
 app = BUNDLE(
     coll,
-    name="ratebar.app",
+    name="Ratebar.app",
     icon="ratebar.icns",
     bundle_identifier="com.biplav00.ratebar",
     info_plist={
         "LSUIElement": True,    # menu-bar only: no Dock icon, no window
-        "CFBundleName": "ratebar",
-        "CFBundleDisplayName": "ratebar",
+        "CFBundleName": "Ratebar",
+        "CFBundleDisplayName": "Ratebar",
         "CFBundleShortVersionString": "0.1.0",
         "CFBundleVersion": "0.1.0",
     },

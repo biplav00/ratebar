@@ -41,8 +41,8 @@ jobs:
       - name: Upload .dmg as build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ratebar-dmg
-          path: packaging/dist/ratebar.dmg
+          name: Ratebar-dmg
+          path: packaging/dist/Ratebar.dmg
           if-no-files-found: error
 
       # On a version tag (v*), also attach the .dmg to the GitHub Release.
@@ -50,4 +50,4 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: packaging/dist/ratebar.dmg
+          files: packaging/dist/Ratebar.dmg

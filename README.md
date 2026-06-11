@@ -26,12 +26,12 @@ Build a standalone menu-bar app — no Python needed to run it:
 
     packaging/build_dmg.sh
 
-This produces `packaging/dist/ratebar.app` and `packaging/dist/ratebar.dmg`
-(arm64, menu-bar-only via `LSUIElement`). Open the `.dmg` and drag **ratebar**
+This produces `packaging/dist/Ratebar.app` and `packaging/dist/Ratebar.dmg`
+(arm64, menu-bar-only via `LSUIElement`). Open the `.dmg` and drag **Ratebar**
 to Applications.
 
 The build is **unsigned / not notarized**, so Gatekeeper will block it on first
-launch. To open it: right-click `ratebar.app` → **Open** → **Open**, once. After
+launch. To open it: right-click `Ratebar.app` → **Open** → **Open**, once. After
 that it launches normally. To start it at login: System Settings → General →
 Login Items → add ratebar.
 
