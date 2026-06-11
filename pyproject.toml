@@ -1,7 +1,7 @@
 [project]
 name = "ratebar"
 version = "0.1.0"
-description = "Add your description here"
+description = "macOS menu bar readout of Claude Code subscription usage"
 readme = "README.md"
 authors = [
     { name = "Biplav Subedi", email = "64011098+biplav00@users.noreply.github.com" }
